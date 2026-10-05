@@ -45,7 +45,7 @@ textarea{resize:none;text-align:left;font-size:15px;line-height:1.55;padding:10p
 </style>
 </head>
 <body>
-<div class="bar"><button id="dl">⬇ Download PNG</button><button class="alt" id="clr">Clear all</button></div>
+<div class="bar"><button id="dl">⬇ Download PNG</button><button id="nd" style="background:#1b7f4c">New day</button><button class="alt" id="clr">Clear all</button></div>
 <div class="hint">Fill the fields, then tap Download PNG.</div>
 <div id="holder"><div id="stage"><div id="sheet"><div class="outer">
 
@@ -154,6 +154,20 @@ $('dl').onclick=async()=>{
   }catch(e){alert('Could not create image: '+e.message)}
   btn.textContent='⬇ Download PNG';
 };
+const KEY='tradingDiaryV1';
+function save(){try{const o={};document.querySelectorAll('#sheet input,#sheet textarea').forEach(e=>o[e.id]=e.value);localStorage.setItem(KEY,JSON.stringify(o))}catch(e){}}
+function load(){try{const o=JSON.parse(localStorage.getItem(KEY)||'null');if(o)for(const k in o){const e=$(k);if(e)e.value=o[k]}}catch(e){}document.querySelectorAll('textarea').forEach(grow)}
+$('sheet').addEventListener('input',save);$('sheet').addEventListener('change',save);
+$('clr').addEventListener('click',()=>setTimeout(save,0));
+$('nd').onclick=()=>{
+  if(!confirm('Start a new day? Name and batch are kept, today\'s closing balance becomes the opening balance, everything else is cleared.'))return;
+  const keep={name:$('name').value,batch:$('batch').value,open:$('close').value||$('open').value};
+  document.querySelectorAll('#sheet input,#sheet textarea').forEach(e=>e.value='');
+  Object.keys(keep).forEach(k=>$(k).value=keep[k]);
+  const d=new Date();$('date').value=d.toLocaleDateString('en-CA');$('day').value=days[d.getDay()];
+  document.querySelectorAll('textarea').forEach(grow);manual=false;save();
+};
+load();
 document.querySelectorAll('.an td').forEach(td=>td.addEventListener('click',e=>{const f=td.querySelector('input,textarea');if(f&&e.target===td)f.focus()}));
 fit();
 </script>
